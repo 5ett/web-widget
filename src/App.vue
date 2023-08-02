@@ -26,7 +26,8 @@ import ChatWidget from './components/ChatWidget.ce.vue';
 }
 
 
-.chat-loader {
+.chat-loader,
+.card-body {
   min-width: 455px !important;
 }
 

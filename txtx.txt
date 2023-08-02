@@ -23,3 +23,25 @@ plugins: [
       "@": resolve(__dirname, "src"),
     },
   },
+
+
+
+  const messages: Array<Chat> = [
+    {
+        message: "Hello and thank you for visiting Rhyolite automated services. How can we help?",
+        author: 'admin-auto',
+        read: false,
+        type: 'text'
+    },
+    {
+        message: "Thank you, I really like your product.",
+        author: 'user',
+        type: 'text'
+    },
+    {
+        message: "https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/screenshot1.webp",
+        author: 'admin-auto',
+        read: false,
+        type: 'media'
+    },
+]

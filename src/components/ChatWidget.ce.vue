@@ -81,6 +81,7 @@
 import { useChatState } from "@/composables";
 import { Chat, WidgetProps } from "@/types";
 import { ref, onMounted, readonly, computed } from "vue";
+import { useCustomFetch } from "@/services";
 
 const { state } = useChatState();
 const chatName = ref('Rhyolite Assistant');
@@ -90,25 +91,7 @@ const { description, position = 'bottom-left' } = defineProps<WidgetProps>()
 
 // data
 const isAdmin = readonly(['admin', 'admin-auto'])
-const messages: Array<Chat> = [
-    {
-        message: "Hello and thank you for visiting Rhyolite automated services. How can we help?",
-        author: 'admin-auto',
-        read: false,
-        type: 'text'
-    },
-    {
-        message: "Thank you, I really like your product.",
-        author: 'user',
-        type: 'text'
-    },
-    {
-        message: "https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/screenshot1.webp",
-        author: 'admin-auto',
-        read: false,
-        type: 'media'
-    },
-]
+
 const isLoading = ref(false);
 const isAdminGenerating = ref(false);
 const showChatbox = ref(false);
@@ -125,31 +108,27 @@ const widgetPos = computed(() => {
 })
 
 // methods
-function sendNewMessage() {
-    // if ($event.key !== 'Enter') {
-    //     return;
-    // }
+async function sendNewMessage() {
     if (!newMessage.value.replace(/\s/g, '').length) {
         return;
     }
     scrollToBottom()
-    const payload: Chat = {
+    isAdminGenerating.value = true;
+    const newChat: Chat = {
         message: newMessage.value,
         author: 'user',
         type: 'text'
     }
-    state.value.chats.push(payload);
+    state.value?.chats?.push(newChat);
     newMessage.value = '';
-    isAdminGenerating.value = true;
-    setTimeout(() => {
-        isAdminGenerating.value = false;
-        const response: Chat = {
-            message: "We've received your request. processing will begin shortly",
-            author: 'admin-auto',
-            type: 'text'
-        }
-        state.value.chats.push(response);
-    }, 5000)
+    const { data, error } = await useCustomFetch('/chats').post({ chat: newChat }).json();
+    if (error.value) {
+        console.error(error.value);
+    }
+    isAdminGenerating.value = false;
+    if (data.value) {
+        state.value.chats = (data.value as any)?.chats;
+    }
 }
 
 function scrollToBottom() {
@@ -159,20 +138,27 @@ function scrollToBottom() {
         height = element?.scrollHeight + element?.scrollTop;
     }
     // element!.scrollTop = element!.scrollHeight;
-    element?.scroll({ top: height + 1000, behavior: "smooth" })
-    console.log(height, height + 1000)
+    element?.scroll({ top: height + 1000, behavior: "smooth" });
 }
 
 function toggleChatbox() {
     showChatbox.value = !showChatbox.value;
 }
 
-onMounted(() => {
+async function fetchFromServer() {
+    const { isFetching, error, data } = await useCustomFetch('/test').json();
+    if (error.value) {
+        console.log(error.value);
+    }
+    console.log(isFetching.value, "<=pending state");
+    console.log(data.value, "<=data");
+    state.value.chats = (data.value as any)?.chats;
+}
+
+onMounted(async () => {
     isLoading.value = true;
-    setTimeout(() => {
-        isLoading.value = false;
-        state.value.chats = [...messages]
-    }, 5000)
+    await fetchFromServer()
+    isLoading.value = false;
 })
 </script>
 
@@ -618,7 +604,8 @@ small,
     height: 100% !important;
 }
 
-.chat-loader {
+.chat-loader,
+.card-body {
     width: 455px;
 }
 
