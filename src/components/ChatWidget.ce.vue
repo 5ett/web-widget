@@ -17,40 +17,39 @@
                             </svg>
                         </span>
                     </div>
-                    <div class="card-body">
-                        <div class="chat-area pb-6 overflow-auto">
-                            <div class="h-100 d-flex align-items-center justify-content-center chat-loader"
-                                v-if="isLoading">
-                                <div class="lds-ellipsis">
-                                    <div v-for="t in 4" :key="(t * 3 - 1)"></div>
-                                </div>
-                            </div>
+                    <div class="card-body chat-area pb-6 overflow-auto" id="chat-area">
 
-                            <div v-else v-for="(chat, index) in state.chats" :key="index" class="d-flex flex-row mb-4"
-                                :class="{
-                                    'justify-content-start': isAdmin.includes(chat.author),
-                                    'justify-content-end': !isAdmin.includes(chat.author),
-                                }">
-                                <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
-                                    alt="avatar 1" class="avatar" v-if="isAdmin.includes(chat.author)">
-                                <div class="p-3 ms-3 rounded-6" :class="{
-                                    'bg-secondary': isAdmin.includes(chat.author),
-                                    'border bg-light': !isAdmin.includes(chat.author)
-                                }">
-                                    <p class="small mb-0" v-if="chat.type === 'text'">{{ chat.message }}</p>
-                                    <img v-else :src="chat.message" :alt="chat.id" class="rounded-4">
-                                </div>
+                        <div class="h-100 d-flex align-items-center justify-content-center chat-loader" v-if="isLoading">
+                            <div class="lds-ellipsis">
+                                <div v-for="t in 4" :key="(t * 3 - 1)"></div>
                             </div>
-                            <div class="d-flex flex-row mb-4 justify-content-start" v-if="isAdminGenerating">
-                                <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
-                                    alt="avatar 1" class="avatar">
-                                <div class="p-3 ms-3 rounded-6 bg-secondary">
-                                    <div class="typing">
-                                        <div class="dot" v-for="d in 3" :key="(d * 9 - 3)"></div>
-                                    </div>
+                        </div>
+
+                        <div v-else v-for="(chat, index) in state.chats" :key="index" class="d-flex flex-row mb-4" :class="{
+                            'justify-content-start': isAdmin.includes(chat.author),
+                            'justify-content-end': !isAdmin.includes(chat.author),
+                        }">
+                            <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
+                                alt="avatar 1" class="avatar" v-if="isAdmin.includes(chat.author)">
+                            <div class="p-3 ms-3 rounded-6" :class="{
+                                'bg-secondary': isAdmin.includes(chat.author),
+                                'border bg-light': !isAdmin.includes(chat.author)
+                            }">
+                                <p class="small mb-0" v-if="chat.type === 'text'">{{ chat.message }}</p>
+                                <img v-else :src="chat.message" :alt="chat.id" class="rounded-4">
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-row mb-4 justify-content-start" v-if="isAdminGenerating">
+                            <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
+                                alt="avatar 1" class="avatar">
+                            <div class="p-3 ms-3 rounded-6 bg-secondary">
+                                <div class="typing">
+                                    <div class="dot" v-for="d in 3" :key="(d * 9 - 3)"></div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                     <div class="card-footer">
                         <form class="form-outline mb-0 postion-relative w-100" @submit.prevent="sendNewMessage">
@@ -80,8 +79,9 @@
 <script setup lang="ts">
 import { useChatState } from "@/composables";
 import { Chat, WidgetProps } from "@/types";
-import { ref, onMounted, readonly, computed } from "vue";
+import { ref, onMounted, readonly, computed, watch } from "vue";
 import { useCustomFetch } from "@/services";
+import $ from 'jquery';
 
 const { state } = useChatState();
 const chatName = ref('Rhyolite Assistant');
@@ -95,6 +95,7 @@ const isAdmin = readonly(['admin', 'admin-auto'])
 const isLoading = ref(false);
 const isAdminGenerating = ref(false);
 const showChatbox = ref(false);
+const chatArea = $('#chatArea');
 
 // computed
 const placeholderText = computed(() => {
@@ -132,13 +133,14 @@ async function sendNewMessage() {
 }
 
 function scrollToBottom() {
-    let element = document.querySelector(".chat-area")
-    let height: number = 1200;
-    if (element) {
-        height = element?.scrollHeight + element?.scrollTop;
-    }
+    // let element = document.getElementById("chat-area")
+    // console.log(element?.scrollHeight);
+    // let height: number = 1200;
+    // if (element) {
+    //     height = element?.scrollHeight + element?.scrollTop;
+    // }
     // element!.scrollTop = element!.scrollHeight;
-    element?.scroll({ top: height + 1000, behavior: "smooth" });
+    // if (chat)
 }
 
 function toggleChatbox() {
@@ -146,19 +148,25 @@ function toggleChatbox() {
 }
 
 async function fetchFromServer() {
-    const { isFetching, error, data } = await useCustomFetch('/test').json();
+    const { error, data } = await useCustomFetch('/test').json();
     if (error.value) {
         console.log(error.value);
     }
-    console.log(isFetching.value, "<=pending state");
-    console.log(data.value, "<=data");
     state.value.chats = (data.value as any)?.chats;
 }
+
+watch(state, (newVal) => {
+    if (newVal) {
+        console.log(newVal)
+        return chatArea.scrollTop(chatArea[0].scrollHeight)
+    }
+})
 
 onMounted(async () => {
     isLoading.value = true;
     await fetchFromServer()
     isLoading.value = false;
+    scrollToBottom();
 })
 </script>
 

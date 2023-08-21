@@ -25,7 +25,15 @@
       "@/*": [
         "./src/*"
       ]
-    }
+    },
+    "typeRoots": [
+      "./node_modules/@types"
+    ],
+    "types": [
+      "node",
+      "jquery",
+      "bootstrap"
+    ]
   },
   "include": [
     "src/**/*.ts",

@@ -11,9 +11,12 @@
   "dependencies": {
     "@vueuse/core": "^10.3.0",
     "axios": "^1.4.0",
+    "jquery": "^3.7.0",
     "vue": "^3.3.4"
   },
   "devDependencies": {
+    "@types/jquery": "^3.5.16",
+    "@types/node": "^20.5.1",
     "@vitejs/plugin-vue": "^4.2.3",
     "sass": "^1.64.1",
     "typescript": "^5.0.2",

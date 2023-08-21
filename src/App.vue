@@ -5,6 +5,7 @@ import ChatWidget from './components/ChatWidget.ce.vue';
 
 <template>
   <chat-widget title="Some test, Isay" />
+  <!-- <hello-world /> -->
 </template>
 
 <style>

@@ -3,3 +3,7 @@ export interface ComponentProps {
   isInvalid?: boolean;
   isDisabled?: boolean;
 }
+
+export interface NullRefHTMLElement extends HTMLElement {
+
+}
